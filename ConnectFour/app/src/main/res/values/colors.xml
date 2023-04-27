@@ -8,6 +8,10 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     
-    <color name="start_gradient">#FF3A457E</color>
-    <color name="end_gradient">#FFEF4B4C</color>
+    <color name="start_gradient">#FF3A467E</color>
+    <color name="end_gradient">#FFEF4C4D</color>
+    <color name="semi_white">#FFE9E9EB</color>
+    <color name="hide_red">#FFF64344</color>
+    <color name="hide_black">#40000000</color>
+    <color name="background_game">#FF313131</color>
 </resources>
