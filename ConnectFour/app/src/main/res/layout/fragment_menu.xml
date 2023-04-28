@@ -32,8 +32,8 @@
 
     <ImageView
         android:id="@+id/img_background_coin"
-        android:layout_width="435dp"
-        android:layout_height="735dp"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:scaleType="centerCrop"
         android:src="@drawable/img_background_coin"
         app:layout_constraintBottom_toBottomOf="parent"

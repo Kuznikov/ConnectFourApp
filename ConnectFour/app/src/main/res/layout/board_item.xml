@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Button xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/board_button"
+    android:layout_width="49dp"
+    android:layout_height="49dp"
+    android:gravity="center"
+    android:background="@color/hide"
+    android:drawableTop="@drawable/game_red_coin"
+    android:paddingTop="0dp"
+    android:paddingBottom="0dp"
+    android:paddingEnd="0dp"
+    android:paddingStart="0dp"
+    />
