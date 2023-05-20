@@ -1,82 +1,54 @@
-package com.example.connectfour.screens.one
+package com.example.connectfour.models
 
 import android.content.Context
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import android.widget.BaseAdapter
-import android.widget.Button
 import android.widget.Toast
-import com.example.connectfour.R
 
-class BoardAdapter(val context: Context) : BaseAdapter() {
-
+class BoardModel(private val context: Context, private val listener: OnBoardChangeListener) {
     private val board = Array(6) { IntArray(7) }
     private var currentPlayer = 1 // 1 - игрок, 2 - компьютер
     private var gameOver = false
 
-    override fun getCount(): Int {
-        return 42
+    fun getBoard(): Array<IntArray> {
+        return board
     }
 
-    override fun getItem(position: Int): Any {
-        return board[position / 7][position % 7]
+    fun getCurrentPlayer(): Int {
+        return currentPlayer
     }
 
-    override fun getItemId(position: Int): Long {
-        return position.toLong()
+    fun isGameOver(): Boolean {
+        return gameOver
     }
 
-    override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
-        val button = if (convertView == null) {
-            val inflater = LayoutInflater.from(context)
-            inflater.inflate(R.layout.board_item, parent, false) as Button
-        } else {
-            convertView as Button
-        }
-        val row = position / 7
-        val col = position % 7
-        val value = board[row][col]
-        val coinDrawable = when (value) {
-            1 -> R.drawable.game_red_coin
-            2 -> R.drawable.game_blue_coin
-            else -> 0
-        }
-        button.setCompoundDrawablesWithIntrinsicBounds(0, coinDrawable, 0, 0)
-        button.setOnClickListener {
-            if (!gameOver && currentPlayer == 1) {
-                // проверяем, что столбец не заполнен
-                if (board[0][col] == 0) {
-                    // добавляем монетку на доску
-                    var i = 5
-                    while (i >= 0 && board[i][col] != 0) {
-                        i--
-                    }
-                    board[i][col] = 1
-                    notifyDataSetChanged()
-                    // проверяем выигрыш игрока
-                    if (checkWin(1, i, col)) {
-                        gameOver = true
-                        Toast.makeText(context, "Выиграл игрок", Toast.LENGTH_SHORT).show()
-                        return@setOnClickListener
-                    }
-                    // передаем ход компьютеру
-                    currentPlayer = 2
-                    makeComputerMove()
-                } else {
-                    Toast.makeText(context, "Этот столбец уже заполнен", Toast.LENGTH_SHORT).show()
+    fun makeMove(row: Int, col: Int): Boolean {
+        if (!gameOver && currentPlayer == 1) {
+            // проверяем, что столбец не заполнен
+            if (board[0][col] == 0) {
+                // добавляем монетку на доску
+                var i = 5
+                while (i >= 0 && board[i][col] != 0) {
+                    i--
                 }
+                board[i][col] = 1
+                // проверяем выигрыш игрока
+                if (checkWin(1, i, col)) {
+                    gameOver = true
+                    return true
+                }
+                // передаем ход компьютеру
+                currentPlayer = 2
+                makeComputerMove()
+                return true
             }
         }
-        return button
+        return false
     }
 
-
     private fun makeComputerMove() {
-// Сначала ищем возможность выиграть за следующий ход
+        // Сначала ищем возможность выиграть за следующий ход
         for (col in 0..6) {
             if (board[0][col] == 0) {
-// проверяем, можно ли поставить монетку компьютеру так, чтобы у него получилась линия из четырех монеток
+                // проверяем, можно ли поставить монетку компьютеру так, чтобы у него получилась линия из четырех монеток
                 var row = 5
                 while (row >= 0 && board[row][col] != 0) {
                     row--
@@ -103,7 +75,7 @@ class BoardAdapter(val context: Context) : BaseAdapter() {
                 if (checkWin(1, row, col)) {
                     // блокируем игрока
                     board[row][col] = 2
-                    notifyDataSetChanged()
+                    listener.onBoardChanged()
                     currentPlayer = 1
                     return
                 } else {
@@ -112,7 +84,7 @@ class BoardAdapter(val context: Context) : BaseAdapter() {
             }
         }
 
-// Наконец, выбираем столбец случайным образом, но так, чтобы компьютер выбирал тот столбец, в котором уже есть монетка игрока.
+        // Наконец, выбираем столбец случайным образом, но так, чтобы компьютер выбирал тот столбец, в котором уже есть монетка игрока.
         var col = (0..6).random()
         var row = 5
         while (row >= 0 && board[row][col] != 0) {
@@ -120,10 +92,10 @@ class BoardAdapter(val context: Context) : BaseAdapter() {
         }
         if (row >= 0) {
             board[row][col] = 2
-            notifyDataSetChanged()
+            listener.onBoardChanged()
             currentPlayer = 1
         } else {
-// если столбец полностью заполнен, выбираем другой столбец
+            // если столбец полностью заполнен, выбираем другой столбец
             for (c in 0..6) {
                 if (board[0][c] == 0) {
                     col = c
@@ -132,14 +104,13 @@ class BoardAdapter(val context: Context) : BaseAdapter() {
                         row--
                     }
                     board[row][col] = 2
-                    notifyDataSetChanged()
+                    listener.onBoardChanged()
                     currentPlayer = 1
                     break
                 }
             }
         }
     }
-
 
     private fun checkWin(player: Int, row: Int, col: Int): Boolean {
         // проверяем горизонтальную линию
@@ -207,5 +178,9 @@ class BoardAdapter(val context: Context) : BaseAdapter() {
             j--
         }
         return false
+    }
+
+    interface OnBoardChangeListener {
+        fun onBoardChanged()
     }
 }

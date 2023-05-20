@@ -1,4 +1,4 @@
-package com.example.connectfour.screens.start
+package com.example.connectfour.viewmodels
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel

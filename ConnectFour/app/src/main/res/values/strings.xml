@@ -9,4 +9,9 @@
     <string name="text_btn_network_game">Игра по сети</string>
     <string name="text_player">Игрок</string>
     <string name="text_cpu">CPU</string>
+    <string name="txt_registr">Регистрация/Вход в аккаунт</string>
+    <string name="txt_register">Register</string>
+    <string name="txt_enter">Enter</string>
+    <string name="login">Login</string>
+    <string name="password">Password</string>
 </resources>

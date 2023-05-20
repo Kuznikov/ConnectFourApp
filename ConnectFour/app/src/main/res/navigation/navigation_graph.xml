@@ -7,16 +7,16 @@
 
     <fragment
         android:id="@+id/startFragment"
-        android:name="com.example.connectfour.screens.start.StartFragment"
+        android:name="com.example.connectfour.views.StartFragment"
         android:label="fragment_start"
         tools:layout="@layout/fragment_start" >
         <action
-            android:id="@+id/action_startFragment_to_menuFragment"
-            app:destination="@id/menuFragment" />
+            android:id="@+id/action_startFragment_to_authFragment"
+            app:destination="@id/authFragment" />
     </fragment>
     <fragment
         android:id="@+id/menuFragment"
-        android:name="com.example.connectfour.screens.MenuFragment"
+        android:name="com.example.connectfour.views.MenuFragment"
         android:label="fragment_menu"
         tools:layout="@layout/fragment_menu" >
         <action
@@ -25,7 +25,16 @@
     </fragment>
     <fragment
         android:id="@+id/onePlayerFragment"
-        android:name="com.example.connectfour.screens.one.OnePlayerFragment"
+        android:name="com.example.connectfour.views.OnePlayerFragment"
         android:label="fragment_one_player"
         tools:layout="@layout/fragment_one_player"/>
+    <fragment
+        android:id="@+id/authFragment"
+        android:name="com.example.connectfour.views.AuthFragment"
+        android:label="fragment_auth"
+        tools:layout="@layout/fragment_auth" >
+        <action
+            android:id="@+id/action_authFragment_to_menuFragment"
+            app:destination="@id/menuFragment" />
+    </fragment>
 </navigation>

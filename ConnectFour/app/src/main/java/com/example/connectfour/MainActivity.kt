@@ -7,7 +7,6 @@ import android.view.Window
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
 import com.example.connectfour.databinding.ActivityMainBinding
-import com.example.connectfour.utilits.APP_ACTIVITY
 
 class MainActivity : AppCompatActivity() {
     lateinit var mNavController: NavController
@@ -20,7 +19,6 @@ class MainActivity : AppCompatActivity() {
         w.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
         _binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(mBinding.root)
-        APP_ACTIVITY = this
         mNavController = Navigation.findNavController(this, R.id.nav_host_fragment)
     }
 
