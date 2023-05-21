@@ -16,4 +16,5 @@
     <color name="background_game">#FF313131</color>
     <color name="blue_el">#FF3E619B</color>
     <color name="hide">#00000000</color>
+    <color name="yellow">#FFF9C00C</color>
 </resources>

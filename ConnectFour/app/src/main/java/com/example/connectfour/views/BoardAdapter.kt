@@ -6,21 +6,25 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.BaseAdapter
 import android.widget.Button
+import android.widget.TextView
 import android.widget.Toast
+import android.os.Handler
+import android.os.Looper
 import com.example.connectfour.R
+import com.example.connectfour.viewmodels.GameViewModel
 
-class BoardAdapter(val context: Context) : BaseAdapter() {
+class BoardAdapter(    private var winnerTextView: TextView? = null,
+                       private val context: Context,
+    private val gameViewModel: GameViewModel
 
-    private val board = Array(6) { IntArray(7) }
-    private var currentPlayer = 1 // 1 - игрок, 2 - компьютер
-    private var gameOver = false
+) : BaseAdapter() {
 
     override fun getCount(): Int {
         return 42
     }
 
     override fun getItem(position: Int): Any {
-        return board[position / 7][position % 7]
+        return position
     }
 
     override fun getItemId(position: Int): Long {
@@ -34,77 +38,72 @@ class BoardAdapter(val context: Context) : BaseAdapter() {
         } else {
             convertView as Button
         }
+
+        val gameModel = gameViewModel.gameModel.value
+
         val row = position / 7
         val col = position % 7
-        val value = board[row][col]
-        val coinDrawable = when (value) {
+
+        val coinDrawable = when (gameModel?.board?.getOrNull(row)?.getOrNull(col) ?: 0) {
             1 -> R.drawable.game_red_coin
             2 -> R.drawable.game_blue_coin
             else -> 0
         }
         button.setCompoundDrawablesWithIntrinsicBounds(0, coinDrawable, 0, 0)
+
         button.setOnClickListener {
+            val currentPlayer = gameModel?.currentPlayer ?: 1
+            val gameOver = gameModel?.gameOver ?: false
+
             if (!gameOver && currentPlayer == 1) {
-                // проверяем, что столбец не заполнен
+                val board = gameModel?.board?.copyOf() ?: return@setOnClickListener
+
+                // Check if the column is not filled
                 if (board[0][col] == 0) {
-                    // добавляем монетку на доску
+                    // Add the coin to the board
                     var i = 5
                     while (i >= 0 && board[i][col] != 0) {
                         i--
                     }
                     board[i][col] = 1
-                    notifyDataSetChanged()
-                    // проверяем выигрыш игрока
-                    if (checkWin(1, i, col)) {
-                        gameOver = true
-                        Toast.makeText(context, "Выиграл игрок", Toast.LENGTH_SHORT).show()
+
+                    val isWin = checkWin(1, i, col, board)
+                    gameViewModel.updateBoard(board, 2, isWin)
+
+                    if (isWin) {
+                        val winner = "Вы победили!"
+                        winnerTextView?.text = winner
+                        winnerTextView?.visibility = View.VISIBLE
                         return@setOnClickListener
                     }
-                    // передаем ход компьютеру
-                    currentPlayer = 2
-                    makeComputerMove()
+
+                    // Pass the turn to the computer
+                    makeComputerMove(gameViewModel)
                 } else {
-                    Toast.makeText(context, "Этот столбец уже заполнен", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "Эта колонка уже заполнена!", Toast.LENGTH_SHORT).show()
                 }
             }
         }
         return button
     }
+    private fun makeComputerMove(gameViewModel: GameViewModel) {
+        val gameModel = gameViewModel.gameModel.value ?: return
+        val board = gameModel.board.copyOf()
 
 
-    private fun makeComputerMove() {
-// Сначала ищем возможность выиграть за следующий ход
+        // First, check if there is a possibility to win on the next move
         for (col in 0..6) {
             if (board[0][col] == 0) {
-// проверяем, можно ли поставить монетку компьютеру так, чтобы у него получилась линия из четырех монеток
                 var row = 5
                 while (row >= 0 && board[row][col] != 0) {
                     row--
                 }
                 board[row][col] = 2
-                if (checkWin(2, row, col)) {
-                    gameOver = true
-                    Toast.makeText(context, "Выиграл компьютер", Toast.LENGTH_SHORT).show()
-                    return
-                } else {
-                    board[row][col] = 0
-                }
-            }
-        }
-        // Затем ищем возможность блокировать игрока
-        for (col in 0..6) {
-            if (board[0][col] == 0) {
-                // проверяем, можно ли поставить монетку игроку так, чтобы у него получилась линия из четырех монеток
-                var row = 5
-                while (row >= 0 && board[row][col] != 0) {
-                    row--
-                }
-                board[row][col] = 1
-                if (checkWin(1, row, col)) {
-                    // блокируем игрока
-                    board[row][col] = 2
-                    notifyDataSetChanged()
-                    currentPlayer = 1
+                if (checkWin(2, row, col, board)) {
+                    gameViewModel.updateBoard(board, 1, true)
+                    val winner = "Победил компьютер!"
+                    winnerTextView?.text = winner
+                    winnerTextView?.visibility = View.VISIBLE
                     return
                 } else {
                     board[row][col] = 0
@@ -112,7 +111,25 @@ class BoardAdapter(val context: Context) : BaseAdapter() {
             }
         }
 
-// Наконец, выбираем столбец случайным образом, но так, чтобы компьютер выбирал тот столбец, в котором уже есть монетка игрока.
+        // Then, check if there is a need to block the player
+        for (col in 0..6) {
+            if (board[0][col] == 0) {
+                var row = 5
+                while (row >= 0 && board[row][col] != 0) {
+                    row--
+                }
+                board[row][col] = 1
+                if (checkWin(1, row, col, board)) {
+                    board[row][col] = 2
+                    gameViewModel.updateBoard(board, 1, false)
+                    return
+                } else {
+                    board[row][col] = 0
+                }
+            }
+        }
+
+        // Finally, select a random column, but choose the one where the player has already placed a coin.
         var col = (0..6).random()
         var row = 5
         while (row >= 0 && board[row][col] != 0) {
@@ -120,10 +137,8 @@ class BoardAdapter(val context: Context) : BaseAdapter() {
         }
         if (row >= 0) {
             board[row][col] = 2
-            notifyDataSetChanged()
-            currentPlayer = 1
+            gameViewModel.updateBoard(board, 1, false)
         } else {
-// если столбец полностью заполнен, выбираем другой столбец
             for (c in 0..6) {
                 if (board[0][c] == 0) {
                     col = c
@@ -132,17 +147,15 @@ class BoardAdapter(val context: Context) : BaseAdapter() {
                         row--
                     }
                     board[row][col] = 2
-                    notifyDataSetChanged()
-                    currentPlayer = 1
-                    break
+                    gameViewModel.updateBoard(board, 1, false)
+                    return
                 }
             }
         }
     }
 
-
-    private fun checkWin(player: Int, row: Int, col: Int): Boolean {
-        // проверяем горизонтальную линию
+    private fun checkWin(player: Int, row: Int, col: Int, board: Array<IntArray>): Boolean {
+        // Check horizontal line
         var count = 0
         for (j in 0..6) {
             if (board[row][j] == player) {
@@ -154,7 +167,8 @@ class BoardAdapter(val context: Context) : BaseAdapter() {
                 count = 0
             }
         }
-        // проверяем вертикальную линию
+
+        // Check vertical line
         count = 0
         for (i in 0..5) {
             if (board[i][col] == player) {
@@ -166,7 +180,8 @@ class BoardAdapter(val context: Context) : BaseAdapter() {
                 count = 0
             }
         }
-        // проверяем диагональную линию слева направо
+
+        // Check diagonal line from top left to bottom right
         count = 0
         var i = row
         var j = col
@@ -186,7 +201,8 @@ class BoardAdapter(val context: Context) : BaseAdapter() {
             i++
             j++
         }
-        // проверяем диагональную линию справа налево
+
+        // Check diagonal line from top right to bottom left
         count = 0
         i = row
         j = col
@@ -206,6 +222,8 @@ class BoardAdapter(val context: Context) : BaseAdapter() {
             i++
             j--
         }
+
         return false
     }
+
 }
