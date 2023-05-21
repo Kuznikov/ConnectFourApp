@@ -3,12 +3,17 @@ package com.example.connectfour.viewmodels
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.connectfour.data.PlayerStatsDao
 import com.example.connectfour.models.GameModel
+import com.example.connectfour.models.PlayerStats
+import kotlinx.coroutines.launch
 
-class GameViewModel : ViewModel() {
+class GameViewModel() : ViewModel() {
 
     private val _gameModel = MutableLiveData<GameModel>()
     val gameModel: LiveData<GameModel> = _gameModel
+
 
     init {
         resetGame()
@@ -188,6 +193,7 @@ class GameViewModel : ViewModel() {
     fun updateBoard(board: Array<IntArray>, currentPlayer: Int, gameOver: Boolean) {
         _gameModel.value = GameModel(board, currentPlayer, gameOver)
     }
+
 
     override fun onCleared() {
         super.onCleared()

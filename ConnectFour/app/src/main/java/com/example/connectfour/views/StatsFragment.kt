@@ -7,22 +7,24 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.navigation.fragment.NavHostFragment
 import com.example.connectfour.R
-import com.example.connectfour.databinding.FragmentStartBinding
+import com.example.connectfour.data.AppDatabase
+import com.example.connectfour.databinding.FragmentStatsBinding
 
-
-class StartFragment : Fragment() {
-    private var _binding: FragmentStartBinding? = null
+class StatsFragment : Fragment() {
+    private var _binding: FragmentStatsBinding? = null
     private val mBinding get() = _binding!!
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
-        _binding = FragmentStartBinding.inflate(layoutInflater, container, false)
+        _binding = FragmentStatsBinding.inflate(layoutInflater, container, false)
         val navController = NavHostFragment.findNavController(this)
-        mBinding.btnReady.setOnClickListener {
-            navController.navigate(R.id.authFragment)
+        mBinding.btnBlueMenu.setOnClickListener {
+            navController.navigate(R.id.menuFragment)
+        }
+        mBinding.btnBlueSettings.setOnClickListener {
+            navController.navigate(R.id.settingsFragment)
         }
         return mBinding.root
     }

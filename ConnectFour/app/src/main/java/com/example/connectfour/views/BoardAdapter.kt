@@ -8,8 +8,6 @@ import android.widget.BaseAdapter
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
-import android.os.Handler
-import android.os.Looper
 import com.example.connectfour.R
 import com.example.connectfour.viewmodels.GameViewModel
 

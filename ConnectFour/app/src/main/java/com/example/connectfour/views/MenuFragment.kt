@@ -22,6 +22,12 @@ class MenuFragment : Fragment() {
         mBinding.btnOnePlayer.setOnClickListener {
             navController.navigate(R.id.onePlayerFragment)
         }
+        mBinding.btnBlueSettings.setOnClickListener {
+            navController.navigate(R.id.settingsFragment)
+        }
+        mBinding.btnBlueStats.setOnClickListener {
+            navController.navigate(R.id.statsFragment)
+        }
         return mBinding.root
     }
 }

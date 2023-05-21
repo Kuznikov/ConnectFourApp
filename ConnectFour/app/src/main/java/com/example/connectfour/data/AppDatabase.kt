@@ -7,14 +7,16 @@ import androidx.room.RoomDatabase
 import com.example.connectfour.models.Game
 import com.example.connectfour.models.Move
 import com.example.connectfour.models.Player
+import com.example.connectfour.models.PlayerStats
 import com.example.connectfour.models.User
 
-@Database(entities = [Game::class, Player::class, Move::class, User::class], version = 1)
+@Database(entities = [Game::class, Player::class, Move::class, User::class, PlayerStats::class], version = 2)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun gameDao(): GameDao
     abstract fun playerDao(): PlayerDao
     abstract fun moveDao(): MoveDao
     abstract fun userDao(): UserDao
+    abstract fun playerStatsDao(): PlayerStatsDao
 
     companion object {
         @Volatile
@@ -26,7 +28,7 @@ abstract class AppDatabase : RoomDatabase() {
                     context.applicationContext,
                     AppDatabase::class.java,
                     "connect_four_database"
-                ).build().also { instance = it }
+                ).fallbackToDestructiveMigration().build().also { instance = it }
             }
         }
     }
