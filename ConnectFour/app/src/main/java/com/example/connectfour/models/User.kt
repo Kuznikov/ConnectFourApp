@@ -8,5 +8,7 @@ data class User(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
     val username: String,
-    val password: String
+    val password: String,
+    var wins: Int,
+    var losses: Int
 )

@@ -10,6 +10,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.NavHostFragment
 import com.example.connectfour.R
 import com.example.connectfour.databinding.FragmentOnePlayerBinding
+import com.example.connectfour.viewmodels.AuthViewModel
 import com.example.connectfour.viewmodels.GameViewModel
 
 
@@ -18,6 +19,7 @@ class OnePlayerFragment : Fragment() {
     private val mBinding get() = _binding!!
     private lateinit var gameViewModel: GameViewModel
     private lateinit var boardAdapter: BoardAdapter
+    private lateinit var authViewModel: AuthViewModel
     private val winnerTextView: TextView? get() = _binding?.statusText
 
     override fun onCreateView(
@@ -28,7 +30,10 @@ class OnePlayerFragment : Fragment() {
         _binding = FragmentOnePlayerBinding.inflate(inflater, container, false)
         gameViewModel = ViewModelProvider(this).get(GameViewModel::class.java)
 
-        boardAdapter = BoardAdapter(winnerTextView,requireContext(), gameViewModel)
+        authViewModel = ViewModelProvider(requireActivity()).get(AuthViewModel::class.java)
+        val username = authViewModel.currentUser?.username ?: "" // Здесь укажите имя пользователя, для которого нужно получить статистику
+
+        boardAdapter = BoardAdapter(winnerTextView,requireContext(), gameViewModel, username)
         mBinding.boardGridView.adapter = boardAdapter
 
         mBinding.resetButton.setOnClickListener {

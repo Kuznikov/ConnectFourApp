@@ -9,14 +9,22 @@ import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import com.example.connectfour.R
+import com.example.connectfour.data.AppDatabase
 import com.example.connectfour.viewmodels.GameViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
-class BoardAdapter(    private var winnerTextView: TextView? = null,
-                       private val context: Context,
-    private val gameViewModel: GameViewModel
+class BoardAdapter(
+    private var winnerTextView: TextView? = null,
+    private val context: Context,
+    private val gameViewModel: GameViewModel,
+    private val username: String
 
 ) : BaseAdapter() {
 
+    val appDatabase = AppDatabase.getInstance(context)
+    val userDao = appDatabase.userDao()
     override fun getCount(): Int {
         return 42
     }
@@ -72,6 +80,14 @@ class BoardAdapter(    private var winnerTextView: TextView? = null,
                         val winner = "Вы победили!"
                         winnerTextView?.text = winner
                         winnerTextView?.visibility = View.VISIBLE
+
+                        CoroutineScope(Dispatchers.IO).launch {
+                            val user = userDao.getUserByUsername(username)
+                            user?.let {
+                                it.wins++
+                                userDao.updateUserWins(it)
+                            }
+                        }
                         return@setOnClickListener
                     }
 
@@ -84,6 +100,7 @@ class BoardAdapter(    private var winnerTextView: TextView? = null,
         }
         return button
     }
+
     private fun makeComputerMove(gameViewModel: GameViewModel) {
         val gameModel = gameViewModel.gameModel.value ?: return
         val board = gameModel.board.copyOf()
@@ -102,6 +119,14 @@ class BoardAdapter(    private var winnerTextView: TextView? = null,
                     val winner = "Победил компьютер!"
                     winnerTextView?.text = winner
                     winnerTextView?.visibility = View.VISIBLE
+
+                    CoroutineScope(Dispatchers.IO).launch {
+                        val user = userDao.getUserByUsername(username)
+                        user?.let {
+                            it.losses++
+                            userDao.updateUserLosses(it)
+                        }
+                    }
                     return
                 } else {
                     board[row][col] = 0

@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.NavHostFragment
 import com.example.connectfour.R
@@ -14,6 +15,7 @@ import com.example.connectfour.data.AppDatabase
 import com.example.connectfour.databinding.FragmentAuthBinding
 import com.example.connectfour.models.User
 import com.example.connectfour.viewmodels.AuthManager
+import com.example.connectfour.viewmodels.AuthViewModel
 import kotlinx.coroutines.launch
 
 class AuthFragment : Fragment() {
@@ -21,7 +23,7 @@ class AuthFragment : Fragment() {
     private val mBinding get() = _binding!!
 
     private lateinit var authManager: AuthManager
-
+    private lateinit var authViewModel: AuthViewModel
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -36,6 +38,7 @@ class AuthFragment : Fragment() {
 
         val userDao = AppDatabase.getInstance(requireContext()).userDao()
         authManager = AuthManager(userDao)
+        authViewModel = ViewModelProvider(requireActivity()).get(AuthViewModel::class.java)
 
         mBinding.btnLogin.setOnClickListener {
             val username = mBinding.txtAuthLogin.text.toString()
@@ -60,6 +63,7 @@ class AuthFragment : Fragment() {
                         // Аутентификация успешна, выполните соответствующие действия
                         showToast("Вход выполнен")
                         navController.navigate(R.id.menuFragment)
+                        authViewModel.currentUser = user
                     } else {
                         // Аутентификация не удалась, покажите сообщение об ошибке
                         showToast("Ошибка аутентификации")
@@ -86,10 +90,9 @@ class AuthFragment : Fragment() {
                     return@launch
                 }
 
-                val user = User(username = username, password = password)
+                val user = User(username = username, password = password, wins = 0, losses = 0)
                 val userId = authManager.register(user)
                 if (userId != -1L) {
-                    // Регистрация успешна, выполните соответствующие действия
                     showToast("Регистрация успешна")
                     // Проверка нового пользователя в базе данных
                     val newUser = authManager.getUserByUsername(username)
@@ -97,14 +100,13 @@ class AuthFragment : Fragment() {
                         showToast("Новый пользователь добавлен в базу данных: ${newUser.username}")
                         showToast("Вход выполнен")
                         navController.navigate(R.id.menuFragment)
+                        authViewModel.currentUser = user
                     }
                 } else {
-                    // Регистрация не удалась, покажите сообщение об ошибке
                     showToast("Ошибка регистрации")
                 }
             }
         } else {
-            // Проверка на пустые значения для username и password
             showToast("Введите имя пользователя и пароль")
         }
     }
