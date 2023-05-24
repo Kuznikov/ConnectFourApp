@@ -59,12 +59,12 @@ class AuthFragment : Fragment() {
                     val navController = NavHostFragment.findNavController(this@AuthFragment)
                     val user = authManager.login(username, password)
                     if (user != null) {
-                        // Аутентификация успешна, выполните соответствующие действия
+                        // Аутентификация успешна
                         showToast("Вход выполнен")
                         navController.navigate(R.id.menuFragment)
                         authViewModel.currentUser = user
                     } else {
-                        // Аутентификация не удалась, покажите сообщение об ошибке
+                        // Аутентификация не удалась
                         showToast("Ошибка аутентификации")
                     }
                 } catch (e: Exception) {
@@ -97,7 +97,6 @@ class AuthFragment : Fragment() {
                     playerOne = "Player 1",
                     playerTwo = "Player 2",
                     coinColor = 0,
-                    timer = 1,
                     mode = 0
                 )
                 val userId = authManager.register(user)

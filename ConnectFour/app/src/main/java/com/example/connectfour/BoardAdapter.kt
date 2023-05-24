@@ -76,9 +76,9 @@ class BoardAdapter(
             if (!gameOver && currentPlayer == 1) {
                 val board = gameModel?.board?.copyOf() ?: return@setOnClickListener
 
-                // Check if the column is not filled
+                // Проверка, не заполнена ли колонка
                 if (board[0][col] == 0) {
-                    // Add the coin to the board
+                    // Добавление монеты на доску
                     var i = 5
                     while (i >= 0 && board[i][col] != 0) {
                         i--
@@ -118,7 +118,7 @@ class BoardAdapter(
         val board = gameModel.board.copyOf()
 
         if (userMode == 0) {
-            // First, check if there is a possibility to win on the next move
+            // Проверка, есть ли возможность выиграть в следующем ходу.
             for (col in 0..6) {
                 if (board[0][col] == 0) {
                     var row = 5
@@ -146,7 +146,7 @@ class BoardAdapter(
                 }
             }
 
-            // Then, check if there is a need to block the player
+            // Проверить, есть ли необходимость заблокировать игрока
             for (col in 0..6) {
                 if (board[0][col] == 0) {
                     var row = 5
@@ -164,7 +164,7 @@ class BoardAdapter(
                 }
             }
 
-            // Finally, select a random column, but choose the one where the player has already placed a coin.
+            // Выбор случайного столбеца, но выбор того, где игрок уже разместил монету.
             var col = (0..6).random()
             var row = 5
             while (row >= 0 && board[row][col] != 0) {
@@ -195,24 +195,14 @@ class BoardAdapter(
             // First, check if there is a possibility to win on the next move
             for (col in 0..6) {
                 if (board[0][col] == 0) {
-                    var row = 5
-                    while (row >= 0 && board[row][col] != 0) {
-                        row--
-                    }
+                    val row = findAvailableRow(col, board)
                     board[row][col] = 2
                     if (checkWin(2, row, col, board)) {
                         gameViewModel.updateBoard(board, 1, true)
                         val winner = "Победил компьютер!"
                         winnerTextView?.text = winner
                         winnerTextView?.visibility = View.VISIBLE
-
-                        CoroutineScope(Dispatchers.IO).launch {
-                            val user = userDao.getUserByUsername(username)
-                            user?.let {
-                                it.losses++
-                                userDao.updateUserLosses(it)
-                            }
-                        }
+                        updatePlayerLosses()
                         return
                     } else {
                         board[row][col] = 0
@@ -223,10 +213,7 @@ class BoardAdapter(
             // Then, check if there is a need to block the player
             for (col in 0..6) {
                 if (board[0][col] == 0) {
-                    var row = 5
-                    while (row >= 0 && board[row][col] != 0) {
-                        row--
-                    }
+                    val row = findAvailableRow(col, board)
                     board[row][col] = 1
                     if (checkWin(1, row, col, board)) {
                         board[row][col] = 2
@@ -241,10 +228,7 @@ class BoardAdapter(
             // If no winning or blocking move, try to create a two-move setup for the player
             for (col in 0..6) {
                 if (board[0][col] == 0) {
-                    var row = 5
-                    while (row >= 0 && board[row][col] != 0) {
-                        row--
-                    }
+                    val row = findAvailableRow(col, board)
                     board[row][col] = 2
                     if (checkTwoMoveSetup(1, row, col, board)) {
                         gameViewModel.updateBoard(board, 1, false)
@@ -256,11 +240,8 @@ class BoardAdapter(
             }
 
             // Finally, select a random column, but choose the one where the player has already placed a coin.
-            var col = (0..6).random()
-            var row = 5
-            while (row >= 0 && board[row][col] != 0) {
-                row--
-            }
+            var col = findRandomColumnWithPlayerCoin(board)
+            var row = findAvailableRow(col, board)
             if (row >= 0) {
                 board[row][col] = 2
                 gameViewModel.updateBoard(board, 1, false)
@@ -268,10 +249,7 @@ class BoardAdapter(
                 for (c in 0..6) {
                     if (board[0][c] == 0) {
                         col = c
-                        row = 5
-                        while (row >= 0 && board[row][col] != 0) {
-                            row--
-                        }
+                        row = findAvailableRow(col, board)
                         board[row][col] = 2
                         gameViewModel.updateBoard(board, 1, false)
                         return
@@ -321,6 +299,40 @@ class BoardAdapter(
         }
 
         return false
+    }
+
+    private fun findAvailableRow(col: Int, board: Array<IntArray>): Int {
+        for (row in 5 downTo 0) {
+            if (board[row][col] == 0) {
+                return row
+            }
+        }
+        return -1 // No available row
+    }
+
+    private fun findRandomColumnWithPlayerCoin(board: Array<IntArray>): Int {
+        val player = 1
+        val columnsWithPlayerCoin = mutableListOf<Int>()
+        for (col in 0..6) {
+            if (board[0][col] == player) {
+                columnsWithPlayerCoin.add(col)
+            }
+        }
+        return if (columnsWithPlayerCoin.isNotEmpty()) {
+            columnsWithPlayerCoin.random()
+        } else {
+            (0..6).random() // If no column with player's coin, select a random column
+        }
+    }
+
+    private fun updatePlayerLosses() {
+        CoroutineScope(Dispatchers.IO).launch {
+            val user = userDao.getUserByUsername(username)
+            user?.let {
+                it.losses++
+                userDao.updateUserLosses(it)
+            }
+        }
     }
 
     private fun checkWin(player: Int, row: Int, col: Int, board: Array<IntArray>): Boolean {

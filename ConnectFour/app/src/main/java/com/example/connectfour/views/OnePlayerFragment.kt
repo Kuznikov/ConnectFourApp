@@ -39,7 +39,7 @@ class OnePlayerFragment : Fragment() {
         val userDao = AppDatabase.getInstance(requireContext()).userDao()
         authViewModel = ViewModelProvider(requireActivity()).get(AuthViewModel::class.java)
         val username = authViewModel.currentUser?.username
-            ?: "" // Здесь укажите имя пользователя, для которого нужно получить статистику
+            ?: "" // Имя пользователя, для которого нужно получить статистику
 
         GlobalScope.launch {
             val user = userDao.getUserByUsername(username)

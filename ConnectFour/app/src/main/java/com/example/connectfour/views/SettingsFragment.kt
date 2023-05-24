@@ -51,13 +51,6 @@ class SettingsFragment : Fragment() {
             }
         }
 
-        // Устанавливаем состояние переключателя для timer
-        lifecycleScope.launch {
-            val user = getCurrentUser()
-            user?.let {
-                mBinding.switchTime.isChecked = it.timer == 1
-            }
-        }
 
         // Устанавливаем состояние переключателя для mode
         lifecycleScope.launch {
@@ -75,13 +68,6 @@ class SettingsFragment : Fragment() {
             }
         }
 
-        mBinding.switchTime.setOnCheckedChangeListener { _, isChecked ->
-            lifecycleScope.launch {
-                val user = getCurrentUser() ?: return@launch
-                user.timer = if (isChecked) 1 else 0
-                updateUser(user)
-            }
-        }
 
         mBinding.switchMode.setOnCheckedChangeListener { _, isChecked ->
             lifecycleScope.launch {

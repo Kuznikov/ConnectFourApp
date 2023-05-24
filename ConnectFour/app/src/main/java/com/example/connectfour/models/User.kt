@@ -14,6 +14,5 @@ data class User(
     var playerOne: String,
     var playerTwo: String,
     var coinColor: Int,
-    var timer: Int,
     var mode: Int
 )
