@@ -10,9 +10,15 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.NavHostFragment
 import com.example.connectfour.BoardAdapter
 import com.example.connectfour.R
+import com.example.connectfour.data.AppDatabase
 import com.example.connectfour.databinding.FragmentOnePlayerBinding
+import com.example.connectfour.models.User
 import com.example.connectfour.viewmodels.AuthViewModel
 import com.example.connectfour.viewmodels.GameViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 
 class OnePlayerFragment : Fragment() {
@@ -30,11 +36,22 @@ class OnePlayerFragment : Fragment() {
     ): View {
         _binding = FragmentOnePlayerBinding.inflate(inflater, container, false)
         gameViewModel = ViewModelProvider(this).get(GameViewModel::class.java)
-
+        val userDao = AppDatabase.getInstance(requireContext()).userDao()
         authViewModel = ViewModelProvider(requireActivity()).get(AuthViewModel::class.java)
-        val username = authViewModel.currentUser?.username ?: "" // Здесь укажите имя пользователя, для которого нужно получить статистику
+        val username = authViewModel.currentUser?.username
+            ?: "" // Здесь укажите имя пользователя, для которого нужно получить статистику
 
-        boardAdapter = BoardAdapter(winnerTextView,requireContext(), gameViewModel, username)
+        GlobalScope.launch {
+            val user = userDao.getUserByUsername(username)
+            user?.let {
+                // Обновление UI с использованием полученных данных пользователя
+                withContext(Dispatchers.Main) {
+                    updateCoinColor(user)
+                }
+            }
+        }
+
+        boardAdapter = BoardAdapter(winnerTextView, requireContext(), gameViewModel, username)
         mBinding.boardGridView.adapter = boardAdapter
 
         mBinding.resetButton.setOnClickListener {
@@ -53,6 +70,20 @@ class OnePlayerFragment : Fragment() {
         }
 
         return mBinding.root
+    }
+
+    private suspend fun updateCoinColor(user: User) {
+        // Обновление текстовых полей с данными статистики
+        withContext(Dispatchers.Main) {
+            val coinColor = user?.coinColor ?: 0
+            if (coinColor == 0) {
+                mBinding.btnOnePlayerRed.visibility = View.VISIBLE
+                mBinding.btnCpuBlue.visibility = View.VISIBLE
+            } else if (coinColor == 1) {
+                mBinding.btnOnePlayerBlue.visibility = View.VISIBLE
+                mBinding.btnCpuRed.visibility = View.VISIBLE
+            }
+        }
     }
 
     override fun onDestroyView() {

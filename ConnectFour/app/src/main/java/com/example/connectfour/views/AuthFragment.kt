@@ -89,7 +89,17 @@ class AuthFragment : Fragment() {
                     return@launch
                 }
 
-                val user = User(username = username, password = password, wins = 0, losses = 0, playerOne = "Player 1", playerTwo = "Player 2")
+                val user = User(
+                    username = username,
+                    password = password,
+                    wins = 0,
+                    losses = 0,
+                    playerOne = "Player 1",
+                    playerTwo = "Player 2",
+                    coinColor = 0,
+                    timer = 1,
+                    mode = 1
+                )
                 val userId = authManager.register(user)
                 if (userId != -1L) {
                     showToast("Регистрация успешна")

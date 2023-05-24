@@ -19,4 +19,6 @@ interface UserDao {
     suspend fun updateUserWins(user: User)
     @Update
     suspend fun updateUserLosses(user: User)
+    @Update
+    suspend fun updateUser(user: User)
 }

@@ -8,6 +8,7 @@ import android.widget.BaseAdapter
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
+import com.example.connectfour.R
 import com.example.connectfour.data.AppDatabase
 import com.example.connectfour.viewmodels.GameViewModel
 import kotlinx.coroutines.CoroutineScope
@@ -24,6 +25,16 @@ class BoardAdapter(
 
     val appDatabase = AppDatabase.getInstance(context)
     val userDao = appDatabase.userDao()
+
+    private var userCoinColor = 0
+
+    init {
+        // Получаем текущего пользователя из базы данных и устанавливаем значение userCoinColor
+        CoroutineScope(Dispatchers.IO).launch {
+            val user = userDao.getUserByUsername(username)
+            userCoinColor = user?.coinColor ?: 0
+        }
+    }
     override fun getCount(): Int {
         return 42
     }
@@ -50,8 +61,8 @@ class BoardAdapter(
         val col = position % 7
 
         val coinDrawable = when (gameModel?.board?.getOrNull(row)?.getOrNull(col) ?: 0) {
-            1 -> R.drawable.game_red_coin
-            2 -> R.drawable.game_blue_coin
+            1 -> if (userCoinColor == 0) R.drawable.game_red_coin else R.drawable.game_blue_coin
+            2 -> if (userCoinColor == 0) R.drawable.game_blue_coin else R.drawable.game_red_coin
             else -> 0
         }
         button.setCompoundDrawablesWithIntrinsicBounds(0, coinDrawable, 0, 0)
