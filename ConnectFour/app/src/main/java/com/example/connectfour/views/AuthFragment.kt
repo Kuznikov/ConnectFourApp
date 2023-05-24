@@ -98,7 +98,7 @@ class AuthFragment : Fragment() {
                     playerTwo = "Player 2",
                     coinColor = 0,
                     timer = 1,
-                    mode = 1
+                    mode = 0
                 )
                 val userId = authManager.register(user)
                 if (userId != -1L) {

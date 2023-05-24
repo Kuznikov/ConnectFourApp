@@ -19,7 +19,7 @@
     <string name="txt_title_color">Цвет:</string>
     <string name="txt_title_timer">Таймер:</string>
     <string name="txt_title_mode">Режим:</string>
-    <string name="txt_game_easy">Легкий</string>
+    <string name="txt_game_easy">Простой</string>
     <string name="txt_mode_hard">Сложный</string>
     <string name="txt_time_15">15</string>
     <string name="txt_time_inf">∞</string>

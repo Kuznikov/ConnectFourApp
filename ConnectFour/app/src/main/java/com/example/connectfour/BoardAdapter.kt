@@ -19,7 +19,7 @@ class BoardAdapter(
     private var winnerTextView: TextView? = null,
     private val context: Context,
     private val gameViewModel: GameViewModel,
-    private val username: String
+    private val username: String,
 
 ) : BaseAdapter() {
 
@@ -27,12 +27,14 @@ class BoardAdapter(
     val userDao = appDatabase.userDao()
 
     private var userCoinColor = 0
+    private var userMode = 0
 
     init {
         // Получаем текущего пользователя из базы данных и устанавливаем значение userCoinColor
         CoroutineScope(Dispatchers.IO).launch {
             val user = userDao.getUserByUsername(username)
             userCoinColor = user?.coinColor ?: 0
+            userMode = user?.mode ?: 0
         }
     }
     override fun getCount(): Int {
@@ -115,76 +117,210 @@ class BoardAdapter(
         val gameModel = gameViewModel.gameModel.value ?: return
         val board = gameModel.board.copyOf()
 
-
-        // First, check if there is a possibility to win on the next move
-        for (col in 0..6) {
-            if (board[0][col] == 0) {
-                var row = 5
-                while (row >= 0 && board[row][col] != 0) {
-                    row--
-                }
-                board[row][col] = 2
-                if (checkWin(2, row, col, board)) {
-                    gameViewModel.updateBoard(board, 1, true)
-                    val winner = "Победил компьютер!"
-                    winnerTextView?.text = winner
-                    winnerTextView?.visibility = View.VISIBLE
-
-                    CoroutineScope(Dispatchers.IO).launch {
-                        val user = userDao.getUserByUsername(username)
-                        user?.let {
-                            it.losses++
-                            userDao.updateUserLosses(it)
-                        }
-                    }
-                    return
-                } else {
-                    board[row][col] = 0
-                }
-            }
-        }
-
-        // Then, check if there is a need to block the player
-        for (col in 0..6) {
-            if (board[0][col] == 0) {
-                var row = 5
-                while (row >= 0 && board[row][col] != 0) {
-                    row--
-                }
-                board[row][col] = 1
-                if (checkWin(1, row, col, board)) {
-                    board[row][col] = 2
-                    gameViewModel.updateBoard(board, 1, false)
-                    return
-                } else {
-                    board[row][col] = 0
-                }
-            }
-        }
-
-        // Finally, select a random column, but choose the one where the player has already placed a coin.
-        var col = (0..6).random()
-        var row = 5
-        while (row >= 0 && board[row][col] != 0) {
-            row--
-        }
-        if (row >= 0) {
-            board[row][col] = 2
-            gameViewModel.updateBoard(board, 1, false)
-        } else {
-            for (c in 0..6) {
-                if (board[0][c] == 0) {
-                    col = c
-                    row = 5
+        if (userMode == 0) {
+            // First, check if there is a possibility to win on the next move
+            for (col in 0..6) {
+                if (board[0][col] == 0) {
+                    var row = 5
                     while (row >= 0 && board[row][col] != 0) {
                         row--
                     }
                     board[row][col] = 2
-                    gameViewModel.updateBoard(board, 1, false)
-                    return
+                    if (checkWin(2, row, col, board)) {
+                        gameViewModel.updateBoard(board, 1, true)
+                        val winner = "Победил компьютер!"
+                        winnerTextView?.text = winner
+                        winnerTextView?.visibility = View.VISIBLE
+
+                        CoroutineScope(Dispatchers.IO).launch {
+                            val user = userDao.getUserByUsername(username)
+                            user?.let {
+                                it.losses++
+                                userDao.updateUserLosses(it)
+                            }
+                        }
+                        return
+                    } else {
+                        board[row][col] = 0
+                    }
+                }
+            }
+
+            // Then, check if there is a need to block the player
+            for (col in 0..6) {
+                if (board[0][col] == 0) {
+                    var row = 5
+                    while (row >= 0 && board[row][col] != 0) {
+                        row--
+                    }
+                    board[row][col] = 1
+                    if (checkWin(1, row, col, board)) {
+                        board[row][col] = 2
+                        gameViewModel.updateBoard(board, 1, false)
+                        return
+                    } else {
+                        board[row][col] = 0
+                    }
+                }
+            }
+
+            // Finally, select a random column, but choose the one where the player has already placed a coin.
+            var col = (0..6).random()
+            var row = 5
+            while (row >= 0 && board[row][col] != 0) {
+                row--
+            }
+            if (row >= 0) {
+                board[row][col] = 2
+                gameViewModel.updateBoard(board, 1, false)
+            } else {
+                for (c in 0..6) {
+                    if (board[0][c] == 0) {
+                        col = c
+                        row = 5
+                        while (row >= 0 && board[row][col] != 0) {
+                            row--
+                        }
+                        board[row][col] = 2
+                        gameViewModel.updateBoard(board, 1, false)
+                        return
+                    }
                 }
             }
         }
+
+
+        // сложного алгоритма ИИ
+        if (userMode == 1) {
+            // First, check if there is a possibility to win on the next move
+            for (col in 0..6) {
+                if (board[0][col] == 0) {
+                    var row = 5
+                    while (row >= 0 && board[row][col] != 0) {
+                        row--
+                    }
+                    board[row][col] = 2
+                    if (checkWin(2, row, col, board)) {
+                        gameViewModel.updateBoard(board, 1, true)
+                        val winner = "Победил компьютер!"
+                        winnerTextView?.text = winner
+                        winnerTextView?.visibility = View.VISIBLE
+
+                        CoroutineScope(Dispatchers.IO).launch {
+                            val user = userDao.getUserByUsername(username)
+                            user?.let {
+                                it.losses++
+                                userDao.updateUserLosses(it)
+                            }
+                        }
+                        return
+                    } else {
+                        board[row][col] = 0
+                    }
+                }
+            }
+
+            // Then, check if there is a need to block the player
+            for (col in 0..6) {
+                if (board[0][col] == 0) {
+                    var row = 5
+                    while (row >= 0 && board[row][col] != 0) {
+                        row--
+                    }
+                    board[row][col] = 1
+                    if (checkWin(1, row, col, board)) {
+                        board[row][col] = 2
+                        gameViewModel.updateBoard(board, 1, false)
+                        return
+                    } else {
+                        board[row][col] = 0
+                    }
+                }
+            }
+
+            // If no winning or blocking move, try to create a two-move setup for the player
+            for (col in 0..6) {
+                if (board[0][col] == 0) {
+                    var row = 5
+                    while (row >= 0 && board[row][col] != 0) {
+                        row--
+                    }
+                    board[row][col] = 2
+                    if (checkTwoMoveSetup(1, row, col, board)) {
+                        gameViewModel.updateBoard(board, 1, false)
+                        return
+                    } else {
+                        board[row][col] = 0
+                    }
+                }
+            }
+
+            // Finally, select a random column, but choose the one where the player has already placed a coin.
+            var col = (0..6).random()
+            var row = 5
+            while (row >= 0 && board[row][col] != 0) {
+                row--
+            }
+            if (row >= 0) {
+                board[row][col] = 2
+                gameViewModel.updateBoard(board, 1, false)
+            } else {
+                for (c in 0..6) {
+                    if (board[0][c] == 0) {
+                        col = c
+                        row = 5
+                        while (row >= 0 && board[row][col] != 0) {
+                            row--
+                        }
+                        board[row][col] = 2
+                        gameViewModel.updateBoard(board, 1, false)
+                        return
+                    }
+                }
+            }
+        }
+
+    }
+
+    private fun checkTwoMoveSetup(player: Int, row: Int, col: Int, board: Array<IntArray>): Boolean {
+        // Check if there is a possibility to create a two-move setup for the player
+        val opponent = if (player == 1) 2 else 1
+
+        // Check horizontal setup
+        if (col <= 3) {
+            if (board[row][col + 1] == player && board[row][col + 2] == opponent && board[row][col + 3] == player) {
+                // Check if the two spaces next to the opponent's coin are empty
+                if (row == 5 || (row < 5 && board[row + 1][col + 2] == 0)) {
+                    return true
+                }
+            }
+        }
+        // Check vertical setup
+        if (row <= 2) {
+            if (board[row + 1][col] == player && board[row + 2][col] == opponent && board[row + 3][col] == player) {
+                return true
+            }
+        }
+        // Check diagonal (/) setup
+        if (row >= 3 && col <= 3) {
+            if (board[row - 1][col + 1] == player && board[row - 2][col + 2] == opponent && board[row - 3][col + 3] == player) {
+                // Check if the two spaces next to the opponent's coin are empty
+                if (row == 3 || (row > 3 && board[row - 4][col + 2] == 0)) {
+                    return true
+                }
+            }
+        }
+        // Check diagonal (\) setup
+        if (row >= 3 && col >= 3) {
+            if (board[row - 1][col - 1] == player && board[row - 2][col - 2] == opponent && board[row - 3][col - 3] == player) {
+                // Check if the two spaces next to the opponent's coin are empty
+                if (row == 3 || (row > 3 && board[row - 4][col - 2] == 0)) {
+                    return true
+                }
+            }
+        }
+
+        return false
     }
 
     private fun checkWin(player: Int, row: Int, col: Int, board: Array<IntArray>): Boolean {
