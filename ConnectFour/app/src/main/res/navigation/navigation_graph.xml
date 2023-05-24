@@ -28,6 +28,9 @@
         <action
             android:id="@+id/action_menuFragment_to_statsFragment"
             app:destination="@id/statsFragment" />
+        <action
+            android:id="@+id/action_menuFragment_to_twoPlayerFragment"
+            app:destination="@id/twoPlayerFragment" />
     </fragment>
     <fragment
         android:id="@+id/onePlayerFragment"
@@ -70,5 +73,14 @@
         <action
             android:id="@+id/action_statsFragment_to_settingsFragment"
             app:destination="@id/settingsFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/twoPlayerFragment"
+        android:name="com.example.connectfour.views.TwoPlayerFragment"
+        android:label="fragment_two_player"
+        tools:layout="@layout/fragment_two_player" >
+        <action
+            android:id="@+id/action_twoPlayerFragment_to_menuFragment"
+            app:destination="@id/menuFragment" />
     </fragment>
 </navigation>

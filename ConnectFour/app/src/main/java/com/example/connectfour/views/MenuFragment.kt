@@ -28,6 +28,9 @@ class MenuFragment : Fragment() {
         mBinding.btnBlueStats.setOnClickListener {
             navController.navigate(R.id.statsFragment)
         }
+        mBinding.btnTwoPlayers.setOnClickListener {
+            navController.navigate(R.id.twoPlayerFragment)
+        }
         return mBinding.root
     }
 }

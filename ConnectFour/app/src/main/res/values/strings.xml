@@ -27,4 +27,6 @@
     <string name="txt_win_stats">Побед:</string>
     <string name="txt_lose_stats">Проигрышей:</string>
     <string name="txt_win_proc">Процент победы:</string>
+    <string name="txt_player_one">Игрок 1</string>
+    <string name="txt_player_two">Игрок 2</string>
 </resources>
