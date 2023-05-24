@@ -29,7 +29,7 @@ class MenuFragment : Fragment() {
             navController.navigate(R.id.statsFragment)
         }
         mBinding.btnTwoPlayers.setOnClickListener {
-            navController.navigate(R.id.twoPlayerFragment)
+            navController.navigate(R.id.nameChoiceFragment)
         }
         return mBinding.root
     }

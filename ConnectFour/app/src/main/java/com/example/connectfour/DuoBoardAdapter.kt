@@ -1,4 +1,5 @@
-package com.example.connectfour.views
+package com.example.connectfour
+
 
 import android.content.Context
 import android.view.LayoutInflater
@@ -6,25 +7,22 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.BaseAdapter
 import android.widget.Button
+import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
-import com.example.connectfour.R
 import com.example.connectfour.data.AppDatabase
 import com.example.connectfour.viewmodels.GameViewModel
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
-class BoardAdapter(
+class DuoBoardAdapter(
     private var winnerTextView: TextView? = null,
     private val context: Context,
     private val gameViewModel: GameViewModel,
-    private val username: String
+    private val player1QueueImageView: ImageView,
+    private val player2QueueImageView: ImageView,
 
 ) : BaseAdapter() {
 
-    val appDatabase = AppDatabase.getInstance(context)
-    val userDao = appDatabase.userDao()
+
     override fun getCount(): Int {
         return 42
     }
@@ -57,11 +55,18 @@ class BoardAdapter(
         }
         button.setCompoundDrawablesWithIntrinsicBounds(0, coinDrawable, 0, 0)
 
+        val currentPlayer = gameModel?.currentPlayer ?: 1
+        val gameOver = gameModel?.gameOver ?: false
+        if (!gameOver) {
+            player1QueueImageView.visibility = if (currentPlayer == 1) View.VISIBLE else View.INVISIBLE
+            player2QueueImageView.visibility = if (currentPlayer == 2) View.VISIBLE else View.INVISIBLE
+        }
+
         button.setOnClickListener {
             val currentPlayer = gameModel?.currentPlayer ?: 1
             val gameOver = gameModel?.gameOver ?: false
 
-            if (!gameOver && currentPlayer == 1) {
+            if (!gameOver) {
                 val board = gameModel?.board?.copyOf() ?: return@setOnClickListener
 
                 // Check if the column is not filled
@@ -71,110 +76,32 @@ class BoardAdapter(
                     while (i >= 0 && board[i][col] != 0) {
                         i--
                     }
-                    board[i][col] = 1
+                    board[i][col] = currentPlayer
 
-                    val isWin = checkWin(1, i, col, board)
-                    gameViewModel.updateBoard(board, 2, isWin)
+                    val isWin = checkWin(currentPlayer, i, col, board)
+                    gameViewModel.updateBoard(board, 3 - currentPlayer, isWin)
 
                     if (isWin) {
-                        val winner = "Вы победили!"
+                        val winner = if (currentPlayer == 1) {
+                            "Победил игрок под номером 1"
+                        } else {
+                            "Победил игрок под номером 2"
+                        }
                         winnerTextView?.text = winner
                         winnerTextView?.visibility = View.VISIBLE
 
-                        CoroutineScope(Dispatchers.IO).launch {
-                            val user = userDao.getUserByUsername(username)
-                            user?.let {
-                                it.wins++
-                                userDao.updateUserWins(it)
-                            }
-                        }
                         return@setOnClickListener
                     }
 
-                    // Pass the turn to the computer
-                    makeComputerMove(gameViewModel)
+                    // Switch the turn to the other player
+                    val nextPlayer = if (currentPlayer == 1) 2 else 1
+                    gameViewModel.updateBoard(board, nextPlayer, false)
                 } else {
                     Toast.makeText(context, "Эта колонка уже заполнена!", Toast.LENGTH_SHORT).show()
                 }
             }
         }
         return button
-    }
-
-    private fun makeComputerMove(gameViewModel: GameViewModel) {
-        val gameModel = gameViewModel.gameModel.value ?: return
-        val board = gameModel.board.copyOf()
-
-
-        // First, check if there is a possibility to win on the next move
-        for (col in 0..6) {
-            if (board[0][col] == 0) {
-                var row = 5
-                while (row >= 0 && board[row][col] != 0) {
-                    row--
-                }
-                board[row][col] = 2
-                if (checkWin(2, row, col, board)) {
-                    gameViewModel.updateBoard(board, 1, true)
-                    val winner = "Победил компьютер!"
-                    winnerTextView?.text = winner
-                    winnerTextView?.visibility = View.VISIBLE
-
-                    CoroutineScope(Dispatchers.IO).launch {
-                        val user = userDao.getUserByUsername(username)
-                        user?.let {
-                            it.losses++
-                            userDao.updateUserLosses(it)
-                        }
-                    }
-                    return
-                } else {
-                    board[row][col] = 0
-                }
-            }
-        }
-
-        // Then, check if there is a need to block the player
-        for (col in 0..6) {
-            if (board[0][col] == 0) {
-                var row = 5
-                while (row >= 0 && board[row][col] != 0) {
-                    row--
-                }
-                board[row][col] = 1
-                if (checkWin(1, row, col, board)) {
-                    board[row][col] = 2
-                    gameViewModel.updateBoard(board, 1, false)
-                    return
-                } else {
-                    board[row][col] = 0
-                }
-            }
-        }
-
-        // Finally, select a random column, but choose the one where the player has already placed a coin.
-        var col = (0..6).random()
-        var row = 5
-        while (row >= 0 && board[row][col] != 0) {
-            row--
-        }
-        if (row >= 0) {
-            board[row][col] = 2
-            gameViewModel.updateBoard(board, 1, false)
-        } else {
-            for (c in 0..6) {
-                if (board[0][c] == 0) {
-                    col = c
-                    row = 5
-                    while (row >= 0 && board[row][col] != 0) {
-                        row--
-                    }
-                    board[row][col] = 2
-                    gameViewModel.updateBoard(board, 1, false)
-                    return
-                }
-            }
-        }
     }
 
     private fun checkWin(player: Int, row: Int, col: Int, board: Array<IntArray>): Boolean {

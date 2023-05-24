@@ -6,10 +6,9 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.example.connectfour.models.User
 
-@Database(entities = [User::class], version = 4)
+@Database(entities = [User::class], version = 5)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao
-
     companion object {
         @Volatile
         private var instance: AppDatabase? = null

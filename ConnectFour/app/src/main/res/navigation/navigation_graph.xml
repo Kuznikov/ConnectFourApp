@@ -29,8 +29,8 @@
             android:id="@+id/action_menuFragment_to_statsFragment"
             app:destination="@id/statsFragment" />
         <action
-            android:id="@+id/action_menuFragment_to_twoPlayerFragment"
-            app:destination="@id/twoPlayerFragment" />
+            android:id="@+id/action_menuFragment_to_nameChoiceFragment"
+            app:destination="@id/nameChoiceFragment" />
     </fragment>
     <fragment
         android:id="@+id/onePlayerFragment"
@@ -82,5 +82,14 @@
         <action
             android:id="@+id/action_twoPlayerFragment_to_menuFragment"
             app:destination="@id/menuFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/nameChoiceFragment"
+        android:name="com.example.connectfour.views.NameChoiceFragment"
+        android:label="fragment_name_choice"
+        tools:layout="@layout/fragment_name_choice" >
+        <action
+            android:id="@+id/action_nameChoiceFragment_to_twoPlayerFragment"
+            app:destination="@id/twoPlayerFragment" />
     </fragment>
 </navigation>

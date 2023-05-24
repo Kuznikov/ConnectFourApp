@@ -10,5 +10,7 @@ data class User(
     val username: String,
     val password: String,
     var wins: Int,
-    var losses: Int
+    var losses: Int,
+    var playerOne: String,
+    var playerTwo: String
 )

@@ -8,10 +8,15 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.NavHostFragment
+import com.example.connectfour.DuoBoardAdapter
 import com.example.connectfour.R
+import com.example.connectfour.data.AppDatabase
 import com.example.connectfour.databinding.FragmentTwoPlayerBinding
 import com.example.connectfour.viewmodels.AuthViewModel
 import com.example.connectfour.viewmodels.GameViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 
 class TwoPlayerFragment : Fragment() {
@@ -21,6 +26,9 @@ class TwoPlayerFragment : Fragment() {
     private lateinit var gameViewModel: GameViewModel
     private lateinit var duoBoardAdapter: DuoBoardAdapter
     private lateinit var authViewModel: AuthViewModel
+    private var playerOneName: String = ""
+    private var playerTwoName: String = ""
+    private val coroutineScope = CoroutineScope(Dispatchers.Main)
     private val winnerTextView: TextView? get() = _binding?.statusText
 
     override fun onCreateView(
@@ -35,7 +43,21 @@ class TwoPlayerFragment : Fragment() {
         authViewModel = ViewModelProvider(requireActivity()).get(AuthViewModel::class.java)
         val username = authViewModel.currentUser?.username ?: ""
 
-        duoBoardAdapter = DuoBoardAdapter(winnerTextView, requireContext(), gameViewModel, username, mBinding.imgQueue, mBinding.imgQueue2)
+        val userDao = AppDatabase.getInstance(requireContext()).userDao()
+        coroutineScope.launch {
+            val user = userDao.getUserByUsername(username)
+            playerOneName = user?.playerOne ?: ""
+            playerTwoName = user?.playerTwo ?: ""
+            updatePlayerNames()
+        }
+
+        duoBoardAdapter = DuoBoardAdapter(
+            winnerTextView,
+            requireContext(),
+            gameViewModel,
+            mBinding.imgQueue,
+            mBinding.imgQueue2
+        )
         mBinding.boardGridView.adapter = duoBoardAdapter
 
         mBinding.resetButton.setOnClickListener {
@@ -55,6 +77,11 @@ class TwoPlayerFragment : Fragment() {
         }
 
         return mBinding.root
+    }
+
+    private fun updatePlayerNames() {
+        mBinding.txtPlayerOne.text = "1: $playerOneName"
+        mBinding.txtPlayerTwo.text = "2: $playerTwoName"
     }
 
     override fun onDestroyView() {

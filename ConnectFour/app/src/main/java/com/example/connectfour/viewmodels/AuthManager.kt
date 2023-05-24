@@ -7,11 +7,9 @@ class AuthManager(private val userDao: UserDao) {
     suspend fun register(user: User): Long {
         return userDao.insertUser(user)
     }
-
     suspend fun login(username: String, password: String): User? {
         return userDao.getUserByUsernameAndPassword(username, password)
     }
-
     suspend fun getUserByUsername(username: String): User? {
         return userDao.getUserByUsername(username)
     }

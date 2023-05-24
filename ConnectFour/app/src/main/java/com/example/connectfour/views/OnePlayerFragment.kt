@@ -8,6 +8,7 @@ import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.NavHostFragment
+import com.example.connectfour.BoardAdapter
 import com.example.connectfour.R
 import com.example.connectfour.databinding.FragmentOnePlayerBinding
 import com.example.connectfour.viewmodels.AuthViewModel

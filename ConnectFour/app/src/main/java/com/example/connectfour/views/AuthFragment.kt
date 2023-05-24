@@ -21,7 +21,6 @@ import kotlinx.coroutines.launch
 class AuthFragment : Fragment() {
     private var _binding: FragmentAuthBinding? = null
     private val mBinding get() = _binding!!
-
     private lateinit var authManager: AuthManager
     private lateinit var authViewModel: AuthViewModel
     override fun onCreateView(
@@ -90,7 +89,7 @@ class AuthFragment : Fragment() {
                     return@launch
                 }
 
-                val user = User(username = username, password = password, wins = 0, losses = 0)
+                val user = User(username = username, password = password, wins = 0, losses = 0, playerOne = "Player 1", playerTwo = "Player 2")
                 val userId = authManager.register(user)
                 if (userId != -1L) {
                     showToast("Регистрация успешна")
@@ -110,7 +109,6 @@ class AuthFragment : Fragment() {
             showToast("Введите имя пользователя и пароль")
         }
     }
-
 
     private fun showToast(message: String) {
         Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
