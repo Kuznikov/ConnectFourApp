@@ -21,7 +21,7 @@ class BoardAdapter(
     private val gameViewModel: GameViewModel,
     private val username: String,
 
-) : BaseAdapter() {
+    ) : BaseAdapter() {
 
     val appDatabase = AppDatabase.getInstance(context)
     val userDao = appDatabase.userDao()
@@ -30,13 +30,14 @@ class BoardAdapter(
     private var userMode = 0
 
     init {
-        // Получаем текущего пользователя из базы данных и устанавливаем значение userCoinColor
+        // Получение текущего пользователя из базы данных и устанавление значения userCoinColor
         CoroutineScope(Dispatchers.IO).launch {
             val user = userDao.getUserByUsername(username)
             userCoinColor = user?.coinColor ?: 0
             userMode = user?.mode ?: 0
         }
     }
+
     override fun getCount(): Int {
         return 42
     }
@@ -76,7 +77,7 @@ class BoardAdapter(
             if (!gameOver && currentPlayer == 1) {
                 val board = gameModel?.board?.copyOf() ?: return@setOnClickListener
 
-                // Проверка, не заполнена ли колонка
+                // Проверка не заполнена ли колонка
                 if (board[0][col] == 0) {
                     // Добавление монеты на доску
                     var i = 5
@@ -117,8 +118,9 @@ class BoardAdapter(
         val gameModel = gameViewModel.gameModel.value ?: return
         val board = gameModel.board.copyOf()
 
+        // Алгоритм обычного ИИ
         if (userMode == 0) {
-            // Проверка, есть ли возможность выиграть в следующем ходу.
+            // Проверка есть ли возможность выиграть в следующем ходу.
             for (col in 0..6) {
                 if (board[0][col] == 0) {
                     var row = 5
@@ -146,7 +148,7 @@ class BoardAdapter(
                 }
             }
 
-            // Проверить, есть ли необходимость заблокировать игрока
+            // Проверка есть ли необходимость заблокировать игрока
             for (col in 0..6) {
                 if (board[0][col] == 0) {
                     var row = 5
@@ -190,9 +192,9 @@ class BoardAdapter(
         }
 
 
-        // сложного алгоритма ИИ
+        // Алгоритм сложного ИИ
         if (userMode == 1) {
-            // First, check if there is a possibility to win on the next move
+            // есть ли возможность выиграть в следующем ходу
             for (col in 0..6) {
                 if (board[0][col] == 0) {
                     val row = findAvailableRow(col, board)
@@ -210,7 +212,7 @@ class BoardAdapter(
                 }
             }
 
-            // Then, check if there is a need to block the player
+            // есть ли необходимость заблокировать игрока
             for (col in 0..6) {
                 if (board[0][col] == 0) {
                     val row = findAvailableRow(col, board)
@@ -225,7 +227,7 @@ class BoardAdapter(
                 }
             }
 
-            // If no winning or blocking move, try to create a two-move setup for the player
+            // Если нет ни выигрышного, ни блокирующего хода, создание двухходовой установки для игрока.
             for (col in 0..6) {
                 if (board[0][col] == 0) {
                     val row = findAvailableRow(col, board)
@@ -239,7 +241,7 @@ class BoardAdapter(
                 }
             }
 
-            // Finally, select a random column, but choose the one where the player has already placed a coin.
+            // выбор случайного столбца, но выбор тото, где игрок уже разместил монету
             var col = findRandomColumnWithPlayerCoin(board)
             var row = findAvailableRow(col, board)
             if (row >= 0) {
@@ -260,11 +262,16 @@ class BoardAdapter(
 
     }
 
-    private fun checkTwoMoveSetup(player: Int, row: Int, col: Int, board: Array<IntArray>): Boolean {
-        // Check if there is a possibility to create a two-move setup for the player
+    private fun checkTwoMoveSetup(
+        player: Int,
+        row: Int,
+        col: Int,
+        board: Array<IntArray>
+    ): Boolean {
+        // Проверка, есть ли возможность создать расстановку на два хода для игрока
         val opponent = if (player == 1) 2 else 1
 
-        // Check horizontal setup
+        // Проверка горизонтальной настройки
         if (col <= 3) {
             if (board[row][col + 1] == player && board[row][col + 2] == opponent && board[row][col + 3] == player) {
                 // Check if the two spaces next to the opponent's coin are empty
@@ -273,16 +280,16 @@ class BoardAdapter(
                 }
             }
         }
-        // Check vertical setup
+        // Проверка вертикальной настройки
         if (row <= 2) {
             if (board[row + 1][col] == player && board[row + 2][col] == opponent && board[row + 3][col] == player) {
                 return true
             }
         }
-        // Check diagonal (/) setup
+        // Проверка настройки диагонали (/)
         if (row >= 3 && col <= 3) {
             if (board[row - 1][col + 1] == player && board[row - 2][col + 2] == opponent && board[row - 3][col + 3] == player) {
-                // Check if the two spaces next to the opponent's coin are empty
+                // Проверка не пусты ли два места рядом с монетой противника.
                 if (row == 3 || (row > 3 && board[row - 4][col + 2] == 0)) {
                     return true
                 }
@@ -291,7 +298,7 @@ class BoardAdapter(
         // Check diagonal (\) setup
         if (row >= 3 && col >= 3) {
             if (board[row - 1][col - 1] == player && board[row - 2][col - 2] == opponent && board[row - 3][col - 3] == player) {
-                // Check if the two spaces next to the opponent's coin are empty
+                // Проверка не пусты ли два места рядом с монетой противника
                 if (row == 3 || (row > 3 && board[row - 4][col - 2] == 0)) {
                     return true
                 }
@@ -307,7 +314,7 @@ class BoardAdapter(
                 return row
             }
         }
-        return -1 // No available row
+        return -1 // Нет доступной строки
     }
 
     private fun findRandomColumnWithPlayerCoin(board: Array<IntArray>): Int {
@@ -321,7 +328,7 @@ class BoardAdapter(
         return if (columnsWithPlayerCoin.isNotEmpty()) {
             columnsWithPlayerCoin.random()
         } else {
-            (0..6).random() // If no column with player's coin, select a random column
+            (0..6).random() // Если нет столбца с монетой игрока, выбор случайного столбеца
         }
     }
 
@@ -336,7 +343,7 @@ class BoardAdapter(
     }
 
     private fun checkWin(player: Int, row: Int, col: Int, board: Array<IntArray>): Boolean {
-        // Check horizontal line
+        // Проверка горизонтальной линии
         var count = 0
         for (j in 0..6) {
             if (board[row][j] == player) {
@@ -349,7 +356,7 @@ class BoardAdapter(
             }
         }
 
-        // Check vertical line
+        // Проверка вертикальной линии
         count = 0
         for (i in 0..5) {
             if (board[i][col] == player) {
@@ -362,7 +369,7 @@ class BoardAdapter(
             }
         }
 
-        // Check diagonal line from top left to bottom right
+        // Проверка диагональной линии от верхнего левого угла к нижнему правому
         count = 0
         var i = row
         var j = col
@@ -383,7 +390,7 @@ class BoardAdapter(
             j++
         }
 
-        // Check diagonal line from top right to bottom left
+        // Проверка диагональной линии от верхнего правого до нижнего левого
         count = 0
         i = row
         j = col

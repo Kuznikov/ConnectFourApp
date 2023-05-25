@@ -20,8 +20,7 @@ class DuoBoardAdapter(
     private val player1QueueImageView: ImageView,
     private val player2QueueImageView: ImageView,
 
-) : BaseAdapter() {
-
+    ) : BaseAdapter() {
 
     override fun getCount(): Int {
         return 42
@@ -58,8 +57,10 @@ class DuoBoardAdapter(
         val currentPlayer = gameModel?.currentPlayer ?: 1
         val gameOver = gameModel?.gameOver ?: false
         if (!gameOver) {
-            player1QueueImageView.visibility = if (currentPlayer == 1) View.VISIBLE else View.INVISIBLE
-            player2QueueImageView.visibility = if (currentPlayer == 2) View.VISIBLE else View.INVISIBLE
+            player1QueueImageView.visibility =
+                if (currentPlayer == 1) View.VISIBLE else View.INVISIBLE
+            player2QueueImageView.visibility =
+                if (currentPlayer == 2) View.VISIBLE else View.INVISIBLE
         }
 
         button.setOnClickListener {
@@ -69,9 +70,10 @@ class DuoBoardAdapter(
             if (!gameOver) {
                 val board = gameModel?.board?.copyOf() ?: return@setOnClickListener
 
-                // Check if the column is not filled
+                // Проверка, не заполнена ли колонка
                 if (board[0][col] == 0) {
-                    // Add the coin to the board
+
+                    // Добавление монеты на доску
                     var i = 5
                     while (i >= 0 && board[i][col] != 0) {
                         i--
@@ -93,7 +95,7 @@ class DuoBoardAdapter(
                         return@setOnClickListener
                     }
 
-                    // Switch the turn to the other player
+                    // Переключение ход на другого игрока
                     val nextPlayer = if (currentPlayer == 1) 2 else 1
                     gameViewModel.updateBoard(board, nextPlayer, false)
                 } else {
@@ -105,7 +107,7 @@ class DuoBoardAdapter(
     }
 
     private fun checkWin(player: Int, row: Int, col: Int, board: Array<IntArray>): Boolean {
-        // Check horizontal line
+        // Проверка горизонтальной линии
         var count = 0
         for (j in 0..6) {
             if (board[row][j] == player) {
@@ -118,7 +120,7 @@ class DuoBoardAdapter(
             }
         }
 
-        // Check vertical line
+        // Проверка вертикальной линии
         count = 0
         for (i in 0..5) {
             if (board[i][col] == player) {
@@ -131,7 +133,7 @@ class DuoBoardAdapter(
             }
         }
 
-        // Check diagonal line from top left to bottom right
+        // Проверка диагональной линии от верхнего левого угла к нижнему правому
         count = 0
         var i = row
         var j = col
@@ -152,7 +154,7 @@ class DuoBoardAdapter(
             j++
         }
 
-        // Check diagonal line from top right to bottom left
+        // Проверка диагональной линии от верхнего правого до нижнего левого
         count = 0
         i = row
         j = col
